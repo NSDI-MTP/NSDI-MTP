@@ -1,0 +1,1387 @@
+event RDMA_EVENT : INCOMING::APP_EVENT {
+    uint32 wr_id;
+    uint32 lkey;
+    addr_t addr;
+    uint32 length;
+    uint32 qp_id;
+}
+
+event SEND_WQE : RDMA_EVENT {
+    bool ack_req;
+}
+
+event WRITE_WQE : RDMA_EVENT {
+    bool ack_req;
+    uint32 rkey;
+    addr_t raddr; 
+}
+
+event READ_WQE : RDMA_EVENT {
+    uint32 rkey;
+    addr_t raddr; 
+}
+
+event ATOMIC_WQE : RDMA_EVENT {
+    uint32 swap_add;
+    uint32 compare;
+    uint32 rkey;
+    addr_t raddr;
+}
+
+event RECV_WQE : RDMA_EVENT {
+
+}
+
+event TRANSMIT_EVENT : PROG_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    uint32 psn;
+    bool ack_req;
+}
+
+event ACK : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    uint32 psn; 
+    uint32 credit_count;
+    uint32 MSN;
+    uint32 pkt_bytes_size;
+}
+
+event NACK : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    bool type_nack;
+    uint32 psn;
+    uint32 RNR_delay;
+    bool ack_req;
+    uint32 pkt_bytes_size;
+}
+
+event READ_REQ_DATA : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    uint32 psn;
+    addr_t raddr;
+    uint32 rkey;
+    bool ecn;
+    uint32 pkt_bytes_size;
+}
+
+event READ_RESP_DATA : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    uint32 psn;
+    uint32 pkt_bytes_size;
+    addr_t transit_addr;
+}
+
+event WRITE_DATA : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    uint32 psn;
+    bool ack_req;
+    addr_t raddr;
+    uint32 rkey;
+    uint32 length;
+    bool ecn;
+    uint32 pkt_bytes_size;
+    addr_t transit_addr;
+}
+
+event RECV_DATA : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 wr_id;
+    uint32 psn;
+    bool ack_req;
+    uint32 opcode;
+    bool ecn;
+    uint32 pkt_bytes_size;
+    addr_t transit_addr;
+    uint32 data_len;
+}
+
+event ATOMIC_DATA : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 swap_add;
+    uint32 compare;
+    uint32 rkey;
+    addr_t raddr;
+    bool ecn;
+    uint32 length;
+    uint32 pkt_bytes_size;
+}
+
+event ATOMIC_ACK : PROG_EVENT {
+    addr_t addr;
+    uint32 length;
+}
+
+event RESPONDER_EVENT : PROG_EVENT {
+    uint32 qp_id;
+}
+
+event CNP_CHECK : TIMER_EVENT {
+    uint32 qp_id;
+}
+
+event CNP : INCOMING::NET_EVENT {
+    uint32 qp_id;
+    uint32 pkt_bytes_size;
+}
+
+event DCQCN_TIMER : TIMER_EVENT {
+    uint32 qp_id;
+}
+
+event ALPHA_CHECK : TIMER_EVENT {
+    uint32 qp_id;
+}
+
+event DCQCN_INCREASE : PROG_EVENT {
+    uint32 qp_id;
+}
+
+event MISS_ACK : TIMER_EVENT {
+    uint32 qp_id;
+}
+
+event FB_EVENT : OUTGOING::APP_EVENT {
+    bool write_to_mem;
+    uint32 fb_type;
+    uint32 bytes;
+    uint32 type_error;
+    addr_t address;
+    uint32 offset;
+    uint32 length;
+    addr_t transit_addr;
+}
+
+event PKT_EVENT : OUTGOING::NET_EVENT {
+    uint32 hdr_combination;
+    UDPHeader udp;
+    BTHeader bth;
+    RETHeader reth;
+    AETHeader aeth;
+    AtomicETHeader atom_aeth;
+    AtomicAckETHeader atom_ack_eth;
+    bool read_from_mem;
+    addr_t address;
+    uint32 length;
+}
+
+event RATE_EVENT : OUTGOING::NET_EVENT {
+    uint32 Rc;
+}
+
+interm_output interm_out {
+    uint32 psn;
+    uint32 pkt_counter;
+}
+
+header IPHeader {
+    bool ecn;
+    bit<16> identification;
+    bit<3> flags;
+    bit<8> ttl;
+    bit<8> protocol;
+    bit<16> hdrChecksum;
+    addr_t srcAddr;
+    addr_t dstAddr;
+}
+
+header UDPHeader {
+    uint32 src_port;
+    uint32 dst_port;
+    uint32 length;
+    uint32 checksum;
+}
+
+header BTHeader {
+    uint32 opcode;
+    bool ack_req;
+    uint32 dest_qp;
+    uint32 psn;
+}
+
+header RETHeader {
+    uint32 raddr;
+    uint32 rkey;
+    uint32 length;
+}
+
+header AETHeader {
+    bool ack;           
+    bool type_nack;     
+    uint32 credit_count;
+    uint32 MSN;
+    uint32 RNR_delay;
+}
+
+header AtomicETHeader {
+    addr_t raddr;
+    uint32 rkey;
+    uint32 swap_add;
+    uint32 compare;
+}
+
+header AtomicAckETHeader {
+    uint32 original_data;
+}
+
+struct work_comp {
+    uint32 wr_id;
+    uint32 status;
+    uint32 opcode;
+    uint32 qp_id;
+    uint32 length;
+}
+
+struct packet_info {
+    PKT_EVENT pkt_ev;
+    uint32 psn;
+    bool ack_req;
+    uint32 wr_id;
+    bool acked;
+    uint32 SSN;
+    addr_t laddr;
+}
+
+struct responder_packet_info {
+    PKT_EVENT pkt_ev;
+    uint32 wr_id;
+}
+
+context myContext {
+    uint32 qp_id;
+    uint32 lkey;
+
+    list<RDMA_EVENT> SQ_list;
+    uint32 num_SQ_list;
+
+    list<RDMA_EVENT> RQ_list;
+    uint32 num_RQ_list;
+
+    list<packet_info> sent_packets;
+    uint32 num_sent_packets;
+
+    uint32 transport_timer = 1;
+    uint32 nPSN;
+    stream CQ;
+
+    list<responder_packet_info> responder_packets;
+    uint32 num_responder_packets;
+
+    uint32 ePSN;
+    uint32 MSN;
+    uint32 credit_count = 0;
+    uint32 recv_first_psn;
+    uint32 write_first_psn;
+
+    uint32 SSN = 0;
+    uint32 LSN = 0;
+
+    uint32 MTU;
+    uint32 init_sqn;
+    uint32 dest_qp;
+    uint32 src_port;
+    uint32 dst_port;
+
+    uint32 Rt;
+    uint32 Rc;
+    uint32 alpha;
+    uint32 byte_counter;
+    uint32 BC;
+    uint32 T1;
+    uint32 F;
+    uint32 Rai;
+    uint32 ecn_found_counter = 0;
+
+    bool first_pkt_connection = true;
+
+    timer_t timer_ack_timeout;
+    timer_t timer_cnp;
+    timer_t timer_alpha;
+    timer_t timer_DCQCN_counter;
+}
+
+void SendProcessor(SEND_WQE ev, myContext ctx, interm_out out) {
+    ctx.SQ_list[ctx.num_SQ_list] = ev;
+    ctx.num_SQ_list = ctx.num_SQ_list + 1;
+    out.psn = -1;
+
+    if(ev.lkey == ctx.lkey) {
+        uint32 first_psn;
+
+        for(uint32 index = 0; index < ev.length; index = index + ctx.MTU) {
+            PKT_EVENT pkt_ev;
+            pkt_ev.read_from_mem = true;
+            pkt_ev.hdr_combination = 0;
+            pkt_ev.address = ev.addr + index;
+
+            uint32 data_len = ctx.MTU;
+            if(index + ctx.MTU < ev.length)
+                pkt_ev.length = ctx.MTU;
+            else { 
+                data_len = ev.length - index;
+                pkt_ev.length = data_len;
+            }
+
+            BTHeader bth;
+            if(ev.length <= ctx.MTU) {
+                bth.opcode = 4;  
+                first_psn = ctx.nPSN;
+            } else if(index == 0) {
+                bth.opcode = 0;     
+                first_psn = ctx.nPSN;
+            } else if(index + ctx.MTU >= ev.length)
+                bth.opcode = 2;     
+            else
+                bth.opcode = 1;    
+            bth.ack_req = ev.ack_req;
+            bth.dest_qp = ctx.dest_qp;
+            bth.psn = ctx.nPSN;
+            ctx.nPSN = ctx.nPSN + 1;
+
+            UDPHeader udp;
+            udp.src_port = ctx.src_port;
+            udp.dst_port = ctx.dst_port;
+            udp.length = 8 + bth.len() + data_len;
+
+            pkt_ev.udp = udp;
+            pkt_ev.bth = bth;
+
+            packet_info save_packet;
+            save_packet.pkt_ev = pkt_ev;
+            save_packet.psn = bth.psn;
+            save_packet.ack_req = bth.ack_req;
+            save_packet.wr_id = ev.wr_id;
+            save_packet.acked = false;
+            save_packet.SSN = ctx.SSN;
+            ctx.SSN = ctx.SSN + 1;
+
+            ctx.sent_packets[ctx.num_sent_packets] = save_packet;
+            ctx.num_sent_packets = ctx.num_sent_packets + 1;
+        }
+
+        out.psn = first_psn;
+    }
+}
+
+void WriteProcessor(WRITE_WQE ev, myContext ctx, interm_out out) {
+    ctx.SQ_list[ctx.num_SQ_list] = ev;
+    ctx.num_SQ_list = ctx.num_SQ_list + 1;
+    out.psn = -1;
+
+    if(ev.lkey == ctx.lkey) {
+        uint32 first_psn;
+
+        for(uint32 index = 0; index < ev.length; index = index + ctx.MTU) {
+            PKT_EVENT pkt_ev;
+            pkt_ev.read_from_mem = true;
+            pkt_ev.address = ev.addr + index;
+
+            uint32 data_len = ctx.MTU;
+            if(index + ctx.MTU < ev.length)
+                pkt_ev.length = ctx.MTU;
+            else { 
+                data_len = ev.length - index;
+                pkt_ev.length = data_len;
+            }
+
+            RETHeader reth;
+            if(index == 0) {
+                reth.raddr = ev.raddr;
+                reth.rkey = ev.rkey;
+                reth.length = ev.length;
+            }
+
+            BTHeader bth;
+            if(ev.length <= ctx.MTU) {
+                bth.opcode = 10;    
+                first_psn = ctx.nPSN;
+            } else if(index == 0) {
+                bth.opcode = 6;    
+                first_psn = ctx.nPSN;
+            } else if(index + ctx.MTU >= ev.length)
+                bth.opcode = 8;     
+            else
+                bth.opcode = 7;     
+            bth.ack_req = ev.ack_req;
+            bth.dest_qp = ctx.dest_qp;
+            bth.psn = ctx.nPSN;
+            ctx.nPSN = ctx.nPSN + 1;
+
+            UDPHeader udp;
+            udp.src_port = ctx.src_port;
+            udp.dst_port = ctx.dst_port;
+            udp.length = 8 + bth.len() + data_len;
+            if(index == 0) {
+                pkt_ev.hdr_combination = 0;
+                udp.length = udp.length + reth.len();
+            } else {
+                pkt_ev.hdr_combination = 1;
+                pkt_ev.reth = reth;
+            }
+            pkt_ev.udp = udp;
+            pkt_ev.bth = bth;
+
+            packet_info save_packet;
+
+            save_packet.pkt_ev = pkt_ev;
+            save_packet.psn = bth.psn;
+            save_packet.ack_req = bth.ack_req;
+            save_packet.wr_id = ev.wr_id;
+            save_packet.acked = false;
+            save_packet.SSN = ctx.SSN;
+            ctx.SSN = ctx.SSN + 1;
+
+            ctx.sent_packets[ctx.num_sent_packets] = save_packet;
+            ctx.num_sent_packets = ctx.num_sent_packets + 1;
+
+            ctx.LSN = ctx.LSN + 1;
+        }
+
+        out.psn = first_psn;
+    }
+}
+
+void RecvProcessor(RECV_WQE ev, myContext ctx, interm_out out) {
+    ctx.RQ_list[ctx.num_RQ_list] = ev;
+    ctx.num_RQ_list = ctx.num_RQ_list + 1;
+    ctx.credit_count = ctx.credit_count + 1;
+}
+
+void ReadProcessor(READ_WQE ev, myContext ctx, interm_out out) {
+    ctx.SQ_list[ctx.num_SQ_list] = ev;
+    ctx.num_SQ_list = ctx.num_SQ_list + 1;
+    out.psn = -1;
+
+    PKT_EVENT pkt_ev;
+    pkt_ev.read_from_mem = false;
+    pkt_ev.hdr_combination = 1;
+    pkt_ev.length = 0;
+    uint32 first_psn;
+
+    RETHeader reth;
+    reth.raddr = ev.raddr;
+    reth.rkey = ev.rkey;
+    reth.length = ev.length;
+
+    BTHeader bth;
+    bth.opcode = 12;
+    bth.dest_qp = ctx.dest_qp;
+    bth.psn = ctx.nPSN;
+    first_psn = ctx.nPSN;
+
+    ctx.nPSN = ctx.nPSN + uint32(ev.length / ctx.MTU);
+
+    UDPHeader udp;
+    udp.src_port = ctx.src_port;
+    udp.dst_port = ctx.dst_port;
+    udp.length = 8 + bth.len() + reth.len();
+
+    pkt_ev.udp = udp;
+    pkt_ev.bth = bth;
+    pkt_ev.reth = reth;
+
+    for(uint32 i = 0; i < uint32(ev.length / ctx.MTU); i = i + 1) {
+        packet_info save_packet;
+
+        save_packet.pkt_ev = pkt_ev;
+        save_packet.psn = bth.psn + i;
+        save_packet.ack_req = true;
+        save_packet.wr_id = ev.wr_id;
+        save_packet.acked = false;
+        save_packet.SSN = ctx.SSN;
+        save_packet.laddr = ev.addr;
+        ctx.SSN = ctx.SSN + 1;
+
+        ctx.sent_packets[ctx.num_sent_packets] = save_packet;
+        ctx.num_sent_packets = ctx.num_sent_packets + 1;
+
+        ctx.LSN = ctx.LSN + 1;
+    }
+
+    out.psn = first_psn;
+}
+
+void AtomicProcessor(READ_WQE ev, myContext ctx, interm_out out) {
+    ctx.SQ_list[ctx.num_SQ_list] = ev;
+    ctx.num_SQ_list = ctx.num_SQ_list + 1;
+    out.psn = -1;
+
+    PKT_EVENT pkt_ev;
+    pkt_ev.hdr_combination = 3;
+    pkt_ev.length = 0;
+
+
+    AtomicETHeader aeth;
+    aeth.raddr = ev.raddr;
+    aeth.rkey = ev.rkey;
+    aeth.swap_add = ev.swap_add;
+    aeth.compare = ev.compare;
+
+    BTHeader bth;
+    if(ev.compare == -1)  
+        bth.opcode = 20;
+    else                   
+        bth.opcode = 19;
+    bth.dest_qp = ctx.dest_qp;
+    bth.psn = ctx.nPSN;
+    ctx.nPSN = ctx.nPSN + 1;
+
+    UDPHeader udp;
+    udp.src_port = ctx.src_port;
+    udp.dst_port = ctx.dst_port;
+    udp.length = 8 + bth.len() + aeth.len();
+
+    pkt_ev.udp = udp;
+    pkt_ev.bth = bth;
+    pkt_ev.atom_aeth = aeth;
+    packet_info save_packet;
+
+    save_packet.pkt_ev = pkt_ev;
+    save_packet.psn = bth.psn;
+    save_packet.ack_req = true;
+    save_packet.wr_id = ev.wr_id;
+    save_packet.acked = false;
+
+    ctx.sent_packets[ctx.num_sent_packets] = save_packet;
+    ctx.num_sent_packets = ctx.num_sent_packets + 1;
+
+    out.psn = ctx.nPSN - 1;
+
+    ctx.LSN = ctx.LSN + 1;
+}
+
+void intermPSNProcessor(TRANSMIT_EVENT ev, myContext ctx, interm_out out) {
+    out.psn = ev.psn;
+}
+
+list<event_t> TransmitProcessor<T>(T ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    if(ctx.first_pkt_connection) {
+        ALPHA_CHECK new_event;
+        new_event.qp_id = ev.qp_id;
+        uint32 alpha_timeout = 55;
+        ctx.timer_alpha.set_duration(microsecond(alpha_timeout));
+        ctx.timer_alpha.start(new_event);
+
+        DCQCN_TIMER new_event2;
+        new_event2.qp_id = ev.qp_id;
+        uint32 DCQCN_timeout = 1500;
+        ctx.timer_DCQCN_counter.set_duration(microsecond(DCQCN_timeout));
+        ctx.timer_DCQCN_counter.start(new_event2);
+
+        ctx.first_pkt_connection = false;
+    }
+
+    bool last_packet = true;
+    BTHeader bth;
+    UDPHeader udp;
+    uint32 number_packets_sent = 0;
+
+    for(uint32 i = 0; i < ctx.num_sent_packets; i = i + 1) {
+        packet_info element_list = ctx.sent_packets[i];
+        PKT_EVENT pkt_ev = element_list.pkt_ev;
+
+        udp = pkt_ev.udp;
+        bth = pkt_ev.bth;
+
+        if(bth.psn >= out.psn) {
+
+            if(!(element_list.SSN <= ctx.LSN) && (bth.opcode == 4 || bth.opcode == 0 || bth.opcode == 2 || bth.opcode == 1)) {
+                pkt_ev.bth.ack_req = true;
+
+                events.add(pkt_ev);
+                number_packets_sent = number_packets_sent + 1;
+                
+                break;
+            }
+
+            element_list.pkt_ev.bth = bth;
+            element_list.pkt_ev.udp = udp;
+            events.add(pkt_ev);
+            number_packets_sent = number_packets_sent + 1;
+
+            ctx.byte_counter = ctx.byte_counter + element_list.pkt_ev.length;
+            if(ctx.byte_counter > ctx.BC) {
+                ctx.byte_counter = 0;
+                ctx.BC = ctx.BC + 1;
+
+                DCQCN_INCREASE new_event;
+                new_event.qp_id = ev.qp_id;
+                events.add(new_event);
+            }
+        } else {
+            element_list.pkt_ev.bth = bth;
+            element_list.pkt_ev.udp = udp;
+        }
+    }
+
+    if(!last_packet) {
+        TRANSMIT_EVENT new_event;
+        new_event.wr_id = ev.wr_id;
+        new_event.psn = out.psn + number_packets_sent;
+        new_event.ack_req = ev.ack_req;
+        events.add(new_event);
+    }
+
+    if(ev.ack_req) {
+        MISS_ACK timer_ev;
+        ctx.timer_ack_timeout.set_duration(second(ctx.transport_timer));
+        ctx.timer_ack_timeout.start(timer_ev);
+    }
+
+    return events;
+}
+
+list<event_t> RecvDataProcessor(RECV_DATA ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    FB_EVENT fb_new_event;
+    fb_new_event.write_to_mem = false;
+    fb_new_event.fb_type = 1;
+    fb_new_event.bytes = ev.pkt_bytes_size;
+    fb_new_event.transit_addr = ev.transit_addr;
+    events.add(fb_new_event);
+
+    PKT_EVENT pkt_ev;
+    pkt_ev.length = 0;
+
+    if(ctx.credit_count > 0) {
+        if(ev.psn == ctx.ePSN && (ev.opcode == 0 || ev.opcode == 4)) {     
+            ctx.recv_first_psn = ev.psn;
+        }
+        AETHeader aeth;
+        if(ev.psn <= ctx.ePSN) {       
+            aeth.ack = true;
+            aeth.MSN = ctx.MSN;
+            if(ev.psn == ctx.ePSN && (ev.opcode == 2 || ev.opcode == 4))       
+                ctx.credit_count = ctx.credit_count - 1;
+            aeth.credit_count = ctx.credit_count;
+        } else {                       
+            aeth.ack = false;
+            aeth.type_nack = true;
+        }
+        BTHeader bth;
+        bth.opcode = 17;
+        bth.dest_qp = ctx.dest_qp;
+        bth.psn = ctx.ePSN;
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len() + aeth.len();
+
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+        pkt_ev.aeth = aeth;
+        pkt_ev.hdr_combination = 2;
+
+        if(ev.psn == ctx.ePSN) {
+            ctx.ePSN = ctx.ePSN + 1;
+            addr_t addr = ctx.RQ_list[0].addr;
+            fb_new_event.address = addr;
+            fb_new_event.offset = ev.psn - ctx.recv_first_psn;
+            fb_new_event.length = ev.data_len;
+            fb_new_event.write_to_mem = true;
+
+            if(ev.opcode == 2 || ev.opcode == 4) {
+
+                for(uint32 i = 0; i < ctx.num_RQ_list - 1; i = i + 1) {
+                    ctx.RQ_list[i] = ctx.RQ_list[i + 1];
+                }
+                ctx.num_RQ_list = ctx.num_RQ_list - 1;
+            }
+        }
+        if(ev.ack_req || !aeth.ack) {   
+            responder_packet_info responder_info;
+            responder_info.pkt_ev = pkt_ev;
+            responder_info.wr_id = ev.wr_id;
+            ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+            ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+            RESPONDER_EVENT new_event;
+            new_event.qp_id = ev.qp_id;
+            events.add(new_event);
+        }
+
+    } else {              
+        AETHeader aeth;
+        aeth.ack = false;
+        aeth.type_nack = false;
+        BTHeader bth;
+        bth.opcode = 17;
+        bth.dest_qp = ctx.dest_qp;
+        bth.psn = ctx.ePSN;
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+        pkt_ev.aeth = aeth;
+
+        pkt_ev.hdr_combination = 2;
+
+        responder_packet_info responder_info;
+        responder_info.pkt_ev = pkt_ev;
+        responder_info.wr_id = ev.wr_id;
+        ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+        ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+    }
+
+    return events;
+}
+
+list<event_t> WriteDataProcessor(WRITE_DATA ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    FB_EVENT fb_new_event;
+    fb_new_event.write_to_mem = false;
+    fb_new_event.fb_type = 1;
+    fb_new_event.bytes = ev.pkt_bytes_size;
+    fb_new_event.transit_addr = ev.transit_addr;
+    events.add(fb_new_event);
+
+    PKT_EVENT pkt_ev;
+    pkt_ev.length = 0;
+
+    if(ev.psn == ctx.ePSN && (ev.opcode == 6 || ev.opcode == 10)) {       
+        ctx.write_first_psn = ev.psn;
+    }
+    AETHeader aeth;
+    if(ev.psn <= ctx.ePSN) {      
+        aeth.ack = true;
+        aeth.MSN = ctx.MSN;
+        aeth.credit_count = ctx.credit_count;
+    } else {                     
+        aeth.ack = false;
+        aeth.type_nack = true;
+    }
+    BTHeader bth;
+    bth.opcode = 17;
+    bth.dest_qp = ctx.dest_qp;
+    bth.psn = ctx.ePSN;
+    UDPHeader udp;
+    udp.src_port = ctx.src_port;
+    udp.dst_port = ctx.dst_port;
+    udp.length = 8 + bth.len() + aeth.len();
+
+    pkt_ev.udp = udp;
+    pkt_ev.bth = bth;
+    pkt_ev.aeth = aeth;
+
+    pkt_ev.hdr_combination = 2;
+
+    if(ev.psn == ctx.ePSN) {
+        ctx.ePSN = ctx.ePSN + 1;
+        addr_t addr = ctx.RQ_list[0].addr;
+        fb_new_event.address = addr;
+        fb_new_event.offset = ev.psn - ctx.write_first_psn;
+        fb_new_event.length = ev.data_len;
+        fb_new_event.write_to_mem = true;
+    }
+    if(ev.ack_req || !aeth.ack) {    
+        responder_packet_info responder_info;
+        responder_info.pkt_ev = pkt_ev;
+        responder_info.wr_id = ev.wr_id;
+        ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+        ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+    }
+
+    return events;
+}
+
+list<event_t> ReadReqProcessor(READ_REQ_DATA ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    PKT_EVENT pkt_ev;
+
+    AETHeader aeth;
+    BTHeader bth;
+    if(ev.psn == ctx.ePSN) {       
+        bool last_packet = false;
+
+        for(uint32 index = 0; index < ev.pkt_bytes_size; index = index + ctx.MTU) {
+            uint32 data_len = ctx.MTU;
+            pkt_ev.address = ev.raddr + index;
+
+            if(index + ctx.MTU < ev.pkt_bytes_size)
+                pkt_ev.length = ctx.MTU;
+            else { 
+                data_len = ev.pkt_bytes_size - index;
+                pkt_ev.length = data_len;
+            }
+            aeth.ack = true;
+            aeth.MSN = ctx.MSN;
+            aeth.credit_count = ctx.credit_count;
+            if(ev.pkt_bytes_size <= ctx.MTU) {
+                bth.opcode = 16;   
+                last_packet = true;
+            } else if(index == 0)
+                bth.opcode = 13;   
+            else if(index + ctx.MTU >= ev.pkt_bytes_size) {
+                bth.opcode = 15;   
+                last_packet = true;
+            } else
+                bth.opcode = 14;     
+            bth.dest_qp = ctx.dest_qp;
+            bth.psn = ctx.ePSN;
+            UDPHeader udp;
+            udp.src_port = ctx.src_port;
+            udp.dst_port = ctx.dst_port;
+            if(bth.opcode != 14) {
+                udp.length = 8 + bth.len() + aeth.len() + data_len;
+                pkt_ev.aeth = aeth;
+                pkt_ev.hdr_combination = 2;
+            }
+            else {
+                udp.length = 8 + bth.len() + data_len;
+                pkt_ev.hdr_combination = 0;
+            }
+            pkt_ev.udp = udp;
+            pkt_ev.bth = bth;
+
+            responder_packet_info responder_info;
+            responder_info.pkt_ev = pkt_ev;
+            responder_info.wr_id = ev.wr_id;
+            ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+            ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+            ctx.ePSN = ctx.ePSN + 1;
+        }
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+
+    } else if(ev.psn < ctx.ePSN) { 
+        aeth.ack = true;
+        aeth.MSN = ctx.MSN;
+        aeth.credit_count = ctx.credit_count;
+        bth.opcode = 17;
+        bth.dest_qp = ctx.dest_qp;
+        bth.psn = ctx.ePSN;
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len() + aeth.len();
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+        pkt_ev.aeth = aeth;
+
+        pkt_ev.hdr_combination = 2;
+
+        responder_packet_info responder_info;
+        responder_info.pkt_ev = pkt_ev;
+        responder_info.wr_id = ev.wr_id;
+        ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+        ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+    } else {                      
+        aeth.ack = false;
+        aeth.type_nack = true;
+        bth.opcode = 17;
+        bth.dest_qp = ctx.dest_qp;
+        bth.psn = ctx.ePSN;
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len() + aeth.len();
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+        pkt_ev.aeth = aeth;
+
+        pkt_ev.hdr_combination = 2;
+
+        responder_packet_info responder_info;
+        responder_info.pkt_ev = pkt_ev;
+        responder_info.wr_id = ev.wr_id;
+        ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+        ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+    }
+
+    return events;
+}
+
+list<event_t> ReadRespProcessor(READ_RESP_DATA ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    out.pkt_counter = 0;
+
+    FB_EVENT fb_new_event;
+    fb_new_event.write_to_mem = false;
+    fb_new_event.fb_type = 1;
+    fb_new_event.bytes = ev.pkt_bytes_size;
+    fb_new_event.transit_addr = ev.transit_addr;
+
+    if(ev.psn >= ctx.sent_packets[0].psn) {
+
+        if(ev.psn == ctx.sent_packets[0].psn) {
+            ctx.timer_ack_timeout.cancel();
+        }
+
+        uint32 pkt_counter = 0;
+        uint32 psn_ack_req = ev.psn;
+
+        for(uint32 i = 0; i < ctx.num_sent_packets; i = i + 1) {
+            packet_info packet = ctx.sent_packets[i];
+            if(packet.ack_req) {
+                psn_ack_req = packet.psn;      
+                break;
+            } else if(packet.psn > ev.psn)
+                break;
+
+            pkt_counter = pkt_counter + 1;
+        }
+
+        if(psn_ack_req != ev.psn) {           
+            TRANSMIT_EVENT new_event;
+            new_event.psn = psn_ack_req;
+            new_event.ack_req = true;
+            events.add(new_event);
+        } else {
+            BTHeader bth = ctx.sent_packets[pkt_counter].pkt_ev.bth;
+            addr_t addr = ctx.sent_packets[pkt_counter].laddr;
+            fb_new_event.address = addr;
+            fb_new_event.offset = ev.psn - bth.psn;
+            fb_new_event.length = ev.data_len;
+            fb_new_event.write_to_mem = true;
+        }
+
+        for(uint32 i = 0; i < ctx.num_sent_packets - pkt_counter; i = i + 1) {
+            ctx.sent_packets[i] = ctx.sent_packets[i + pkt_counter];
+        }
+        ctx.num_sent_packets = ctx.num_sent_packets - pkt_counter;
+
+        for(uint32 i = 0; i < ctx.num_sent_packets; i = i + 1) {
+            packet_info packet = ctx.sent_packets[i];
+            if(packet.ack_req) {
+                ctx.timer_ack_timeout.restart();
+                break;
+            }
+        }
+        out.pkt_counter = pkt_counter;
+    }
+
+    events.add(fb_new_event);
+    return events;
+}
+
+list<event_t> AtomicDataProcessor(ATOMIC_DATA ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    PKT_EVENT pkt_ev;
+    pkt_ev.length = 0;
+
+    AETHeader aeth;
+    BTHeader bth;
+
+    if(ev.psn == ctx.ePSN) {
+        ATOMIC_ACK new_ev;
+        new_ev.length = ev.length;
+        events.add(new_ev);
+
+    } else if(ev.psn < ctx.ePSN) { 
+        aeth.ack = true;
+        aeth.MSN = ctx.MSN;
+        aeth.credit_count = ctx.credit_count;
+        bth.opcode = 17;
+        bth.dest_qp = ctx.dest_qp;
+        bth.psn = ctx.ePSN;
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len() + aeth.len();
+
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+        pkt_ev.aeth = aeth;
+
+        pkt_ev.hdr_combination = 2;
+
+        responder_packet_info responder_info;
+        responder_info.pkt_ev = pkt_ev;
+        responder_info.wr_id = ev.wr_id;
+        ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+        ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+    } else {                       
+        aeth.ack = false;
+        aeth.type_nack = true;
+        bth.opcode = 17;
+        bth.dest_qp = ctx.dest_qp;
+        bth.psn = ctx.ePSN;
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len() + aeth.len();
+
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+        pkt_ev.aeth = aeth;
+
+        responder_packet_info responder_info;
+        responder_info.pkt_ev = pkt_ev;
+        responder_info.wr_id = ev.wr_id;
+        ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+        ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+        RESPONDER_EVENT new_event;
+        new_event.qp_id = ev.qp_id;
+        events.add(new_event);
+    }   
+    return events;
+}
+
+list<event_t> AtomicAckProcessor(ATOMIC_ACK ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    PKT_EVENT pkt_ev;
+    pkt_ev.length = 0;
+    pkt_ev.length = ev.length;
+    pkt_ev.hdr_combination = 4;
+
+    AtomicAckETHeader atomicACKeth;
+    AETHeader aeth;
+    BTHeader bth;
+    UDPHeader udp;
+
+    atomicACKeth.original_data = 0;
+
+    aeth.ack = true;
+    aeth.MSN = ctx.MSN;
+    aeth.credit_count = ctx.credit_count;
+
+    bth.opcode = 18;
+    bth.dest_qp = ctx.dest_qp;
+    bth.psn = ctx.ePSN;
+
+    udp.src_port = ctx.src_port;
+    udp.dst_port = ctx.dst_port;
+
+    udp.length = 8 + bth.len() + aeth.len() + atomicACKeth.len();
+
+    pkt_ev.udp = udp;
+    pkt_ev.bth = bth;
+    pkt_ev.aeth = aeth;
+    pkt_ev.atom_ack_eth = atomicACKeth;
+
+    responder_packet_info responder_info;
+    responder_info.pkt_ev = pkt_ev;
+    responder_info.wr_id = ev.wr_id;
+    ctx.responder_packets[ctx.num_responder_packets] = responder_info;
+    ctx.num_responder_packets = ctx.num_responder_packets + 1;
+
+    RESPONDER_EVENT new_event;
+    new_event.qp_id = ev.qp_id;
+    events.add(new_event);
+
+    events.add(pkt_ev);
+
+    ctx.ePSN = ctx.ePSN + 1;
+
+    return events;
+}
+
+list<event_t> ResponderProcessor(RESPONDER_EVENT ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    uint32 counter_pkts = 0;
+
+    for(uint32 i = 0; i < ctx.num_responder_packets; i = i + 1) {
+        counter_pkts = counter_pkts + 1;
+    }
+
+    for(uint32 i = 0; i < ctx.num_responder_packets - counter_pkts; i = i + 1) {
+        ctx.responder_packets[i] = ctx.responder_packets[i + counter_pkts];
+    }
+    ctx.num_responder_packets = ctx.num_responder_packets - counter_pkts;
+
+    return events;
+}
+
+list<event_t> AckProcessor(ACK ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    out.pkt_counter = 0;
+
+    if(ev.psn == ctx.sent_packets[0].psn) {
+        ctx.timer_ack_timeout.cancel();
+    }
+
+    uint32 pkt_counter = 0;
+    uint32 psn_ack_req = ev.psn;
+
+    for(uint32 i = 0; i < ctx.num_sent_packets; i = i + 1) {
+        if(ctx.sent_packets[i].ack_req) {
+            psn_ack_req = ctx.sent_packets[i].psn;      
+            break;
+        } else if(ctx.sent_packets[i].psn > ev.psn)
+            break;
+        pkt_counter = pkt_counter + 1;
+    }
+
+    if(psn_ack_req != ev.psn) {        
+        TRANSMIT_EVENT new_event;
+        new_event.psn = psn_ack_req;
+        new_event.ack_req = true;
+        events.add(new_event);
+    }
+
+    ctx.LSN = ev.credit_count + ev.MSN;        
+
+    for(uint32 i = 0; i < ctx.num_sent_packets; i = i + 1) {
+        if(ctx.sent_packets[i].ack_req) {
+            ctx.timer_ack_timeout.restart();
+            break;
+        }
+    }
+    out.pkt_counter = pkt_counter;
+    return events;
+}
+
+list<event_t> NackProcessor(NACK ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    out.pkt_counter = 0;
+
+    ev.ack_req = true;
+
+    if(ev.type_nack) {
+        uint32 pkt_counter = 0;
+        uint32 psn_ack_req = ev.psn;
+
+        for(uint32 i = 0; i < ctx.num_sent_packets; i = i + 1) {
+            if(ctx.sent_packets[i].ack_req) {
+                psn_ack_req = ctx.sent_packets[i].psn;      
+                break;
+            } else if(ctx.sent_packets[i].psn > ev.psn)
+                break;
+            pkt_counter = pkt_counter + 1;
+        }
+
+        TRANSMIT_EVENT new_event;
+        ev.psn = psn_ack_req;
+
+        events.add(new_event);
+
+        out.pkt_counter = pkt_counter;
+    }
+    return events;
+}
+
+void RemoveSQProcessor <T>(T ev, myContext ctx, interm_out out) {
+    uint32 remove_counter = 0;
+
+    for(uint32 i = 0; i < ctx.num_SQ_list; i = i + 1) {
+        if(ctx.sent_packets[i].wr_id == ev.wr_id)
+            break;
+        remove_counter = remove_counter + 1;
+    }
+
+    for(uint32 i = 0; i < ctx.num_sent_packets - out.pkt_counter; i = i + 1) {
+        ctx.sent_packets[i] = ctx.sent_packets[i + out.pkt_counter];
+    }
+    ctx.num_sent_packets = ctx.num_sent_packets - out.pkt_counter;
+
+    for(uint32 i = 0; i < ctx.num_SQ_list - remove_counter; i = i + 1) {
+
+        FB_EVENT fb_new_event;
+        fb_new_event.write_to_mem = false;
+        fb_new_event.fb_type = 0;
+        fb_new_event.bytes = ev.length;
+        events.add(fb_new_event);
+
+        ctx.SQ_list[i] = ctx.SQ_list[i + remove_counter];
+    }
+    ctx.num_SQ_list = ctx.num_SQ_list - remove_counter;
+}
+
+list<event_t> CnpCheckProcessor <T>(T ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    if(ev.ecn) {
+        ctx.ecn_found_counter = ctx.ecn_found_counter + 1;
+        PKT_EVENT pkt_ev;
+        pkt_ev.length = 0;
+
+        BTHeader bth;
+        bth.opcode = 129;
+        bth.ack_req = false;
+        bth.dest_qp = ev.qp_id;
+        bth.psn = 0;
+
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len();
+
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+
+        pkt_ev.hdr_combination = 0;
+
+        events.add(pkt_ev);
+
+        FB_EVENT fb_new_event;
+        fb_new_event.write_to_mem = false;
+        fb_new_event.fb_type = 0;
+        fb_new_event.bytes = ev.data_len;
+        events.add(fb_new_event);
+
+        CNP_CHECK new_event;
+        new_event.qp_id = ev.qp_id;
+
+        ctx.timer_cnp.set_duration(microsecond(50));
+        ctx.timer_cnp.start(new_event);
+        ctx.ecn_found_counter = 0;
+    }
+    return events;
+}
+
+list<event_t> CnpRepeatProcessor (CNP_CHECK ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+
+    if(ctx.ecn_found_counter > 0) {
+        PKT_EVENT pkt_ev;
+        pkt_ev.length = 0;
+
+        BTHeader bth;
+        bth.opcode = 129;
+        bth.ack_req = false;
+        bth.dest_qp = ev.qp_id;
+        bth.psn = 0;
+
+        UDPHeader udp;
+        udp.src_port = ctx.src_port;
+        udp.dst_port = ctx.dst_port;
+        udp.length = 8 + bth.len();
+
+        pkt_ev.udp = udp;
+        pkt_ev.bth = bth;
+
+        pkt_ev.hdr_combination = 0;
+
+        events.add(pkt_ev);
+
+        ctx.timer_cnp.restart();
+    } else
+        ctx.timer_cnp.cancel();
+
+    return events;
+}
+
+void CnpRateProcessor(CNP ev, myContext ctx, interm_out out) {
+
+    uint32 Rc = ctx.Rc;
+    uint32 alpha = ctx.alpha;
+
+    ctx.Rt = Rc;
+    ctx.Rc = Rc * (1 - alpha / 2);
+    ctx.alpha = (1 - 1/16) * alpha + 1/16;
+
+    ctx.timer_alpha.restart();
+}
+
+void AlphaCheckProcessor(ALPHA_CHECK ev, myContext ctx, interm_out out) {
+
+    uint32 alpha = ctx.alpha;
+
+    ctx.alpha = (1 - 1/16) * alpha;
+
+    ctx.timer_alpha.restart();
+}
+
+void DcqcnTimerProcessor(DCQCN_TIMER ev, myContext ctx, interm_out out) {
+
+    ctx.T1 = ctx.T1 + 1;
+
+    DCQCN_INCREASE new_event;
+    new_event.qp_id = ev.qp_id;
+    events.add(new_event);
+
+    ctx.timer_DCQCN_counter.restart();
+}
+
+list<event_t> DcqcnIncreaseProcessor(DCQCN_INCREASE ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    uint32 maximum;
+    uint32 minimum;
+
+    if(ctx.T1 > ctx.BC) {
+        maximum = ctx.T1;
+        minimum = ctx.BC;
+    } else if(ctx.T1 < ctx.BC) {
+        maximum = ctx.BC;
+        minimum = ctx.T1;
+    } else {
+        maximum = ctx.BC;
+        minimum = maximum;
+    }
+
+    if(maximum < ctx.F) {
+        ctx.Rc = (ctx.Rt + ctx.Rc) / 2;
+    } else if(minimum > ctx.F) {
+        ctx.Rt = ctx.Rai * (minimum - ctx.F + 1);
+        ctx.Rc = (ctx.Rt + ctx.Rc) / 2;
+    } else {
+        ctx.Rt = ctx.Rt + ctx.Rai;
+        ctx.Rc = (ctx.Rt + ctx.Rc) / 2;
+    }
+
+    RATE_EVENT new_event;
+    new_event.Rc = ctx.Rc;
+    events.add(new_event);
+
+    return events;
+}
+
+list<event_t> MissAckProcessor(MISS_ACK ev, myContext ctx, interm_out out) {
+    list<event_t> events;
+    if(ctx.num_sent_packets > 0) {
+        PKT_EVENT pkt_ev = ctx.sent_packets[0].pkt_ev;
+        events.add(pkt_ev);
+
+        ctx.timer_ack_timeout.restart();
+    }
+}
+
+dispatch table {
+    SEND_WQE    -> {SendProcessor, TransmitProcessor};
+    WRITE_WQE   -> {WriteProcessor, TransmitProcessor};
+    RECV_WQE    -> {RecvProcessor};
+    READ_WQE    -> {ReadProcessor, TransmitProcessor};
+    ATOMIC_WQE  -> {AtomicProcessor, TransmitProcessor};
+    TRANSMIT_EVENT          -> {intermPSNProcessor, TransmitProcessor};
+    RECV_DATA               -> {CnpCheckProcessor, RecvDataProcessor};
+    WRITE_DATA              -> {CnpCheckProcessor, WriteDataProcessor};
+    READ_REQ_DATA           -> {CnpCheckProcessor, ReadReqProcessor};
+    READ_RESP_DATA          -> {ReadRespProcessor, RemoveSQProcessor};
+    ATOMIC_DATA             -> {CnpCheckProcessor, AtomicDataProcessor};
+    ATOMIC_ACK              -> {AtomicAckProcessor};
+    RESPONDER_EVENT         -> {ResponderProcessor};
+    ACK                     -> {AckProcessor, RemoveSQProcessor};
+    NACK                    -> {NackProcessor, RemoveSQProcessor, TransmitProcessor};
+    CNP_CHECK               -> {CnpRepeatProcessor};
+    CNP                     -> {CnpRateProcessor};
+    DCQCN_TIMER             -> {DcqcnTimerProcessor};
+    DCQCN_INCREASE          -> {DcqcnIncreaseProcessor};
+    ALPHA_CHECK             -> {AlphaCheckProcessor};
+    MISS_ACK                -> {MissAckProcessor};
+}
